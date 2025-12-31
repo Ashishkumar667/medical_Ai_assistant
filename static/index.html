@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Medical AI Chatbot</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #5b2be0, #9b4de0);
+      color: #333;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+      margin: 0;
+    }
+    
+    .chat-container {
+      width: 100%;
+      max-width: 800px;
+      background: #fff;
+      border-radius: 15px;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      height: 90vh;
+    }
+    
+    .chat-header {
+      background: #5b2be0;
+      padding: 20px;
+      text-align: center;
+      color: white;
+      position: relative;
+    }
+    
+    .chat-header h1 {
+      font-size: 1.5em;
+      margin-bottom: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    
+    .chat-header p {
+      font-size: 0.9em;
+      opacity: 0.9;
+    }
+    
+    .disclaimer {
+      background: #ffeb3b;
+      color: #333;
+      padding: 10px;
+      text-align: center;
+      font-size: 0.8em;
+      font-weight: bold;
+    }
+    
+    .chat-messages {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      background: #f8f9fa;
+    }
+    
+    .message {
+      padding: 15px;
+      border-radius: 12px;
+      max-width: 85%;
+      line-height: 1.5;
+      position: relative;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .user {
+      align-self: flex-end;
+      background: #5b2be0;
+      color: white;
+      border-bottom-right-radius: 4px;
+    }
+    
+    .bot {
+      align-self: flex-start;
+      background: white;
+      color: #333;
+      border: 1px solid #e0e0e0;
+      border-bottom-left-radius: 4px;
+    }
+    
+    .message-time {
+      font-size: 0.7em;
+      opacity: 0.7;
+      margin-top: 5px;
+      text-align: right;
+    }
+    
+    .sources {
+      margin-top: 10px;
+      padding: 10px;
+      background: #f0f0f0;
+      border-radius: 8px;
+      font-size: 0.85em;
+    }
+    
+    .sources h4 {
+      margin-bottom: 5px;
+      color: #5b2be0;
+    }
+    
+    .sources ul {
+      padding-left: 20px;
+    }
+    
+    .suggestions {
+      margin-top: 10px;
+      padding: 10px;
+      background: #e8f5e8;
+      border-radius: 8px;
+      font-size: 0.85em;
+    }
+    
+    .suggestions h4 {
+      margin-bottom: 5px;
+      color: #2e7d32;
+    }
+    
+    .suggestions ul {
+      padding-left: 20px;
+    }
+    
+    .emergency-alert {
+      background: #ffebee;
+      border-left: 4px solid #f44336;
+      padding: 15px;
+      margin-top: 10px;
+      border-radius: 8px;
+    }
+    
+    .emergency-alert h4 {
+      color: #f44336;
+      margin-bottom: 5px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    
+    .chat-input-container {
+      display: flex;
+      padding: 15px;
+      background: white;
+      border-top: 1px solid #e0e0e0;
+      gap: 10px;
+    }
+    
+    .chat-input {
+      flex: 1;
+      padding: 12px 15px;
+      border: 1px solid #ddd;
+      border-radius: 25px;
+      outline: none;
+      font-size: 1em;
+      transition: border-color 0.3s;
+    }
+    
+    .chat-input:focus {
+      border-color: #5b2be0;
+    }
+    
+    .send-button {
+      padding: 12px 20px;
+      border: none;
+      border-radius: 25px;
+      background: #5b2be0;
+      color: white;
+      cursor: pointer;
+      transition: background 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .send-button:hover {
+      background: #9b4de0;
+    }
+    
+    .send-button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    
+    .loading {
+      align-self: flex-start;
+      background: white;
+      padding: 15px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #666;
+      font-style: italic;
+    }
+    
+    .loading-dots {
+      display: flex;
+      gap: 3px;
+    }
+    
+    .loading-dots span {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #5b2be0;
+      animation: bounce 1.5s infinite;
+    }
+    
+    .loading-dots span:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+    
+    .loading-dots span:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+    
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+    }
+    
+    .typing-indicator {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 5px;
+    }
+    
+    @media (max-width: 768px) {
+      .chat-container {
+        height: 95vh;
+        border-radius: 10px;
+      }
+      
+      .message {
+        max-width: 90%;
+      }
+      
+      .chat-header h1 {
+        font-size: 1.3em;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="chat-container">
+    <div class="chat-header">
+      <h1>💊 Medical AI Assistant</h1>
+      <p>Powered by medical knowledge from trusted sources</p>
+    </div>
+    
+    <div class="disclaimer">
+      ⚠️ IMPORTANT: I am an AI assistant, not a medical professional. Always consult healthcare providers for medical advice.
+    </div>
+    
+    <div class="chat-messages" id="messages">
+      <div class="message bot">
+        <div>Hello! I'm your medical AI assistant. I can help answer health questions based on medical literature. How can I help you today?</div>
+        <div class="message-time" id="initial-time"></div>
+      </div>
+    </div>
+    
+    <div class="chat-input-container">
+      <input type="text" class="chat-input" id="userInput" placeholder="Ask me any health question..." onkeypress="handleKeyPress(event)">
+      <button class="send-button" onclick="sendMessage()" id="sendButton">
+        Send
+      </button>
+    </div>
+  </div>
+
+  <script>
+    let sessionId = null;
+    
+    // Set initial message time
+    document.getElementById('initial-time').textContent = getCurrentTime();
+    
+    function getCurrentTime() {
+      return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+    
+    async function sendMessage() {
+      const input = document.getElementById("userInput");
+      const button = document.getElementById("sendButton");
+      const msg = input.value.trim();
+      
+      if (!msg) return;
+      if (button.disabled) return;
+      
+      // Disable input and button while processing
+      input.disabled = true;
+      button.disabled = true;
+      
+      addMessage("user", msg);
+      input.value = "";
+      
+      // Show loading indicator
+      const loadingDiv = document.createElement("div");
+      loadingDiv.className = "loading";
+      loadingDiv.id = "loading";
+      loadingDiv.innerHTML = `
+        <div class="loading-dots">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+        Analyzing your question...
+      `;
+      document.getElementById("messages").appendChild(loadingDiv);
+      scrollToBottom();
+
+      try {
+        const requestBody = { 
+          question: msg,
+          session_id: sessionId 
+        };
+        
+        const response = await fetch("http://127.0.0.1:8000/chat", {
+          method: "POST",
+          headers: { 
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+          },
+          body: JSON.stringify(requestBody)
+        });
+
+        // Remove loading indicator
+        document.getElementById("loading").remove();
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Server error: ${response.status} - ${errorText}`);
+        }
+
+        const data = await response.json();
+        
+        // Store session ID if provided
+        if (data.meta && data.meta.session_id) {
+          sessionId = data.meta.session_id;
+        }
+        
+        // Display the response
+        displayBotResponse(data);
+        
+      } catch (error) {
+        console.error("Error:", error);
+        // Remove loading indicator if it exists
+        const loading = document.getElementById("loading");
+        if (loading) loading.remove();
+        
+        addMessage("bot", "Sorry, I'm having trouble connecting to the medical knowledge base. Please try again in a moment.");
+      } finally {
+        // Re-enable input and button
+        input.disabled = false;
+        button.disabled = false;
+        input.focus();
+      }
+    }
+    
+    function displayBotResponse(data) {
+      const messagesDiv = document.getElementById("messages");
+      
+      // Create main message container
+      const messageDiv = document.createElement("div");
+      messageDiv.className = "message bot";
+      
+      // Add the answer
+      const answerDiv = document.createElement("div");
+      answerDiv.innerHTML = data.answer.replace(/\n/g, '<br>');
+      messageDiv.appendChild(answerDiv);
+      
+      // Add sources if available
+      if (data.sources && data.sources.length > 0) {
+        const sourcesDiv = document.createElement("div");
+        sourcesDiv.className = "sources";
+        sourcesDiv.innerHTML = `
+          <h4>📚 Sources:</h4>
+          <ul>
+            ${data.sources.map(source => `<li>${source}</li>`).join('')}
+          </ul>
+        `;
+        messageDiv.appendChild(sourcesDiv);
+      }
+      
+      // Add suggestions if available
+      if (data.suggestions && data.suggestions.length > 0) {
+        const suggestionsDiv = document.createElement("div");
+        suggestionsDiv.className = "suggestions";
+        suggestionsDiv.innerHTML = `
+          <h4>💡 Suggestions:</h4>
+          <ul>
+            ${data.suggestions.map(suggestion => `<li>${suggestion}</li>`).join('')}
+          </ul>
+        `;
+        messageDiv.appendChild(suggestionsDiv);
+      }
+      
+      // Add emergency alert if it's an emergency response
+      if (data.meta && data.meta.intent === "EMERGENCY") {
+        const emergencyDiv = document.createElement("div");
+        emergencyDiv.className = "emergency-alert";
+        emergencyDiv.innerHTML = `
+          <h4>🚨 URGENT MEDICAL ATTENTION NEEDED</h4>
+          <p>Please seek immediate medical care for these symptoms.</p>
+        `;
+        messageDiv.appendChild(emergencyDiv);
+      }
+      
+      // Add timestamp
+      const timeDiv = document.createElement("div");
+      timeDiv.className = "message-time";
+      timeDiv.textContent = getCurrentTime();
+      messageDiv.appendChild(timeDiv);
+      
+      messagesDiv.appendChild(messageDiv);
+      scrollToBottom();
+    }
+
+    function addMessage(sender, text) {
+      const messagesDiv = document.getElementById("messages");
+      const messageDiv = document.createElement("div");
+      messageDiv.className = `message ${sender}`;
+      
+      const textDiv = document.createElement("div");
+      textDiv.textContent = text;
+      messageDiv.appendChild(textDiv);
+      
+      const timeDiv = document.createElement("div");
+      timeDiv.className = "message-time";
+      timeDiv.textContent = getCurrentTime();
+      messageDiv.appendChild(timeDiv);
+      
+      messagesDiv.appendChild(messageDiv);
+      scrollToBottom();
+    }
+    
+    function scrollToBottom() {
+      const messagesDiv = document.getElementById("messages");
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    function handleKeyPress(event) {
+      if (event.key === 'Enter') {
+        sendMessage();
+      }
+    }
+
+    // Focus input on page load
+    window.onload = function() {
+      document.getElementById("userInput").focus();
+    }
+  </script>
+</body>
+</html>
